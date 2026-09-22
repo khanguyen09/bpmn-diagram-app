@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "fixture": "miwg-reference-call-activity-local.bpmn",
+  "artifactRole": "immutable-upstream-fixture",
+  "source": {
+    "organization": "bpmn-miwg",
+    "repository": "https://github.com/bpmn-miwg/bpmn-miwg-test-suite",
+    "commit": "cb2629519cee6280ab521f99dc46a9815a221a35",
+    "officialSource": "https://github.com/bpmn-miwg/bpmn-miwg-test-suite/blob/cb2629519cee6280ab521f99dc46a9815a221a35/Reference/C.5.0.bpmn",
+    "rawSource": "https://raw.githubusercontent.com/bpmn-miwg/bpmn-miwg-test-suite/cb2629519cee6280ab521f99dc46a9815a221a35/Reference/C.5.0.bpmn",
+    "retrievedAt": "2026-08-01T05:14:53Z"
+  },
+  "producerEvidence": {
+    "tool": "BPMN Modeler",
+    "version": "6.1.19.201902051502",
+    "releaseEvidence": null,
+    "evidence": "xml-metadata",
+    "unknownFields": ["exportDate", "exportPlatform", "authoringSteps", "vendorProductName"],
+    "note": "Exporter metadata is declared by the BPMN MIWG reference XML; the claim does not infer a wider product identity."
+  },
+  "license": {
+    "spdx": "CC-BY-3.0",
+    "source": "https://github.com/bpmn-miwg/bpmn-miwg-test-suite/blob/cb2629519cee6280ab521f99dc46a9815a221a35/LICENSE.txt"
+  },
+  "integrity": { "algorithm": "sha256", "value": "f8c125a7c492d218d1f6962fe03920bec4b1e4a9c2efae0746926667a67f44cc" },
+  "namespaces": [
+    "http://purl.org/rss/2.0/",
+    "http://trisotech.com/feed",
+    "http://www.bpsim.org/schemas/1.0",
+    "http://www.omg.org/spec/BPMN/20100524/DI",
+    "http://www.omg.org/spec/BPMN/20100524/MODEL",
+    "http://www.omg.org/spec/BPMN/non-normative/color/1.0",
+    "http://www.omg.org/spec/DD/20100524/DC",
+    "http://www.omg.org/spec/DD/20100524/DI",
+    "http://www.omg.org/spec/DMN/20180521/FEEL/",
+    "http://www.trisotech.com/2014/triso/bpmn",
+    "http://www.trisotech.com/2015/triso/modeling",
+    "http://www.trisotech.com/definitions/_5f5fbc02-46c1-4615-b2bd-89b2d938ac0b",
+    "http://www.w3.org/2001/XMLSchema-instance"
+  ],
+  "independenceBasis": "Byte-original BPMN MIWG reference model from a pinned independent interchange corpus.",
+  "claimBoundary": {
+    "id": "miwg-reference-call-activity-local-c5",
+    "feature": "call-activity-local-target",
+    "minimumTebProfile": "teb-core-activity-containers@1",
+    "semanticAssertions": [
+      { "id": "_3d1ef204-2d4c-4643-8fc5-c319cc032ec0", "type": "bpmn:Process", "parentId": "_5f5fbc02-46c1-4615-b2bd-89b2d938ac0b" },
+      { "id": "_b9338c62-a257-47dd-8c2e-88b80b73c330", "type": "bpmn:CallActivity", "parentId": "_3d1ef204-2d4c-4643-8fc5-c319cc032ec0" },
+      { "id": "_774bc005-0917-43d5-ab70-0f9fe123fbd1", "type": "bpmn:Process", "parentId": "_5f5fbc02-46c1-4615-b2bd-89b2d938ac0b" }
+    ],
+    "propertyAssertions": [
+      { "elementId": "_b9338c62-a257-47dd-8c2e-88b80b73c330", "property": "name", "value": "Check for connected clients", "valueSource": "explicit" },
+      { "elementId": "_774bc005-0917-43d5-ab70-0f9fe123fbd1", "property": "isExecutable", "value": false, "valueSource": "effective-bpmn-default" }
+    ],
+    "referenceAssertions": [
+      { "elementId": "_b9338c62-a257-47dd-8c2e-88b80b73c330", "property": "calledElement", "targetIds": ["_774bc005-0917-43d5-ab70-0f9fe123fbd1"] }
+    ],
+    "di": {
+      "shapes": [{ "id": "_1a35c023-bfda-41a8-a7a1-65fdaa238623", "elementId": "_b9338c62-a257-47dd-8c2e-88b80b73c330" }],
+      "edges": []
+    },
+    "expectedTeb": { "accepted": false, "safeToPersist": false, "readyToSeal": false, "ruleIds": ["BPMN-PROFILE-004"] },
+    "exclusions": ["full-bpmn-2.0-conformance", "workflow-engine-execution", "universal-interoperability", "vendor-extension-preservation"],
+    "statement": "Raw moddle projection preserves a local calledElement from CallActivity to a distinct non-executable Definitions-root Process and CallActivity DI; no invocation or IO mapping claim."
+  }
+}

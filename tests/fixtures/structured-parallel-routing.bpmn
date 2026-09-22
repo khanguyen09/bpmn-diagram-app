@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_Structured_Parallel"
+  targetNamespace="https://the-experience.blog/bpmn/core-structured">
+  <bpmn:process id="Process_Structured_Parallel" name="Parallel editorial review" isExecutable="false">
+    <bpmn:startEvent id="Start_Ready" name="Ready">
+      <bpmn:outgoing>Flow_Start_Split</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:parallelGateway id="Gateway_Parallel_Split" name="Review in parallel">
+      <bpmn:incoming>Flow_Start_Split</bpmn:incoming>
+      <bpmn:outgoing>Flow_Split_Copy</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Split_Legal</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:task id="Task_Copy" name="Copy review">
+      <bpmn:incoming>Flow_Split_Copy</bpmn:incoming>
+      <bpmn:outgoing>Flow_Copy_Join</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:task id="Task_Legal" name="Legal review">
+      <bpmn:incoming>Flow_Split_Legal</bpmn:incoming>
+      <bpmn:outgoing>Flow_Legal_Join</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:parallelGateway id="Gateway_Parallel_Join" name="Reviews complete">
+      <bpmn:incoming>Flow_Copy_Join</bpmn:incoming>
+      <bpmn:incoming>Flow_Legal_Join</bpmn:incoming>
+      <bpmn:outgoing>Flow_Join_End</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:endEvent id="End_Approved" name="Approved">
+      <bpmn:incoming>Flow_Join_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Split" sourceRef="Start_Ready" targetRef="Gateway_Parallel_Split" />
+    <bpmn:sequenceFlow id="Flow_Split_Copy" sourceRef="Gateway_Parallel_Split" targetRef="Task_Copy" />
+    <bpmn:sequenceFlow id="Flow_Split_Legal" sourceRef="Gateway_Parallel_Split" targetRef="Task_Legal" />
+    <bpmn:sequenceFlow id="Flow_Copy_Join" sourceRef="Task_Copy" targetRef="Gateway_Parallel_Join" />
+    <bpmn:sequenceFlow id="Flow_Legal_Join" sourceRef="Task_Legal" targetRef="Gateway_Parallel_Join" />
+    <bpmn:sequenceFlow id="Flow_Join_End" sourceRef="Gateway_Parallel_Join" targetRef="End_Approved" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_Structured_Parallel">
+    <bpmndi:BPMNPlane id="Plane_Structured_Parallel" bpmnElement="Process_Structured_Parallel">
+      <bpmndi:BPMNShape id="Shape_Start_Ready" bpmnElement="Start_Ready">
+        <dc:Bounds x="100" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Parallel_Split" bpmnElement="Gateway_Parallel_Split" isMarkerVisible="true">
+        <dc:Bounds x="190" y="215" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Copy" bpmnElement="Task_Copy">
+        <dc:Bounds x="310" y="120" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Legal" bpmnElement="Task_Legal">
+        <dc:Bounds x="310" y="280" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Parallel_Join" bpmnElement="Gateway_Parallel_Join" isMarkerVisible="true">
+        <dc:Bounds x="510" y="215" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_Approved" bpmnElement="End_Approved">
+        <dc:Bounds x="640" y="222" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Start_Split" bpmnElement="Flow_Start_Split">
+        <di:waypoint x="136" y="240" />
+        <di:waypoint x="190" y="240" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Split_Copy" bpmnElement="Flow_Split_Copy">
+        <di:waypoint x="215" y="215" />
+        <di:waypoint x="215" y="160" />
+        <di:waypoint x="310" y="160" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Split_Legal" bpmnElement="Flow_Split_Legal">
+        <di:waypoint x="215" y="265" />
+        <di:waypoint x="215" y="320" />
+        <di:waypoint x="310" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Copy_Join" bpmnElement="Flow_Copy_Join">
+        <di:waypoint x="430" y="160" />
+        <di:waypoint x="535" y="160" />
+        <di:waypoint x="535" y="215" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Legal_Join" bpmnElement="Flow_Legal_Join">
+        <di:waypoint x="430" y="320" />
+        <di:waypoint x="535" y="320" />
+        <di:waypoint x="535" y="265" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Join_End" bpmnElement="Flow_Join_End">
+        <di:waypoint x="560" y="240" />
+        <di:waypoint x="640" y="240" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

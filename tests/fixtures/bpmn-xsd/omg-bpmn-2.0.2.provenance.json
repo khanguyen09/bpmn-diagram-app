@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "artifactRole": "offline-test-schema-bundle",
+  "specification": "BPMN 2.0.2",
+  "officialSource": "https://www.omg.org/spec/BPMN/2.0.2/",
+  "package": {
+    "name": "bpmn-moddle",
+    "version": "10.1.0",
+    "repository": "https://github.com/bpmn-io/bpmn-moddle",
+    "commit": "7e78c8c669d37d9296254dd357d37bfeda6cab6b",
+    "integrity": "sha512-k9Vl97hiFwlr4bJTQ5+pZp21bmrQwil5jnMQ30wF8vney2/WnIcJmWwYzRTAKFVoViTGowtDfbO5rGEF4viO0w==",
+    "license": "MIT"
+  },
+  "root": "BPMN20.xsd",
+  "files": [
+    {
+      "name": "BPMN20.xsd",
+      "bytes": 1905,
+      "sha256": "4c5e3d2c8e14c9e51cd0fc9f857ab9f53d761d04ba405be0e652efe8953204a7",
+      "targetNamespace": "http://www.omg.org/spec/BPMN/20100524/MODEL",
+      "dependencies": ["BPMNDI.xsd", "Semantic.xsd"]
+    },
+    {
+      "name": "Semantic.xsd",
+      "bytes": 60946,
+      "sha256": "aa37542753e49d53838fc91da3581cf2de28dabd0244ce71ace1baaa707fdadc",
+      "targetNamespace": "http://www.omg.org/spec/BPMN/20100524/MODEL",
+      "dependencies": []
+    },
+    {
+      "name": "BPMNDI.xsd",
+      "bytes": 3910,
+      "sha256": "1bfaab6a1e3b4184055100b15d1404e3414601fd47768feb7e932b4cd49fe77f",
+      "targetNamespace": "http://www.omg.org/spec/BPMN/20100524/DI",
+      "dependencies": ["DC.xsd", "DI.xsd"]
+    },
+    {
+      "name": "DI.xsd",
+      "bytes": 3370,
+      "sha256": "62fa0d89138ac5de62152061be07c899a74e7b983c0486dc6803113e1a5f94a2",
+      "targetNamespace": "http://www.omg.org/spec/DD/20100524/DI",
+      "dependencies": ["DC.xsd"]
+    },
+    {
+      "name": "DC.xsd",
+      "bytes": 1295,
+      "sha256": "b325cd3c0d03628d5a4e10f78a1e8816b4344a2b35c459b4f5ca1a9c71097590",
+      "targetNamespace": "http://www.omg.org/spec/DD/20100524/DC",
+      "dependencies": []
+    }
+  ],
+  "claimBoundary": "Offline OMG BPMN 2.0.2 core XSD grammar evidence only; not semantic validity, vendor-schema validity, executability or universal interoperability."
+}

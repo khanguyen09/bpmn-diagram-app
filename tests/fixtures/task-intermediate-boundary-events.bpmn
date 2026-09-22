@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_AdvancedEvents" targetNamespace="https://the-experience-blogs.local/bpmn">
+  <bpmn:message id="Message_Shared" name="Customer response" />
+  <bpmn:message id="Message_Cancel" name="Cancellation" />
+  <bpmn:process id="Process_AdvancedEvents" name="Advanced event model" isExecutable="false">
+    <bpmn:startEvent id="Start_1"><bpmn:outgoing>Flow_Start_User</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:userTask id="User_Review" name="Review request">
+      <bpmn:incoming>Flow_Start_User</bpmn:incoming><bpmn:outgoing>Flow_User_Service</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:boundaryEvent id="Boundary_Timer" name="Review timeout" attachedToRef="User_Review" cancelActivity="false">
+      <bpmn:outgoing>Flow_Boundary_Timer_End</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerDefinition_Boundary"><bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT30M</bpmn:timeDuration></bpmn:timerEventDefinition>
+    </bpmn:boundaryEvent>
+    <bpmn:serviceTask id="Service_Check" name="System checks">
+      <bpmn:incoming>Flow_User_Service</bpmn:incoming><bpmn:outgoing>Flow_Service_Manual</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:boundaryEvent id="Boundary_Message" name="Cancellation received" attachedToRef="Service_Check">
+      <bpmn:outgoing>Flow_Boundary_Message_End</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageDefinition_Boundary" messageRef="Message_Cancel" />
+    </bpmn:boundaryEvent>
+    <bpmn:manualTask id="Manual_File" name="File paperwork">
+      <bpmn:incoming>Flow_Service_Manual</bpmn:incoming><bpmn:outgoing>Flow_Manual_Throw</bpmn:outgoing>
+    </bpmn:manualTask>
+    <bpmn:intermediateThrowEvent id="Throw_Message" name="Notify response">
+      <bpmn:incoming>Flow_Manual_Throw</bpmn:incoming><bpmn:outgoing>Flow_Throw_Gateway</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageDefinition_Throw" messageRef="Message_Shared" />
+    </bpmn:intermediateThrowEvent>
+    <bpmn:eventBasedGateway id="Gateway_Event" name="Wait for outcome" instantiate="false" eventGatewayType="Exclusive">
+      <bpmn:incoming>Flow_Throw_Gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_Catch</bpmn:outgoing><bpmn:outgoing>Flow_Gateway_Receive</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="Catch_Message" name="Response received">
+      <bpmn:incoming>Flow_Gateway_Catch</bpmn:incoming><bpmn:outgoing>Flow_Catch_End</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageDefinition_Catch" messageRef="Message_Shared" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:receiveTask id="Receive_Cancel" name="Receive cancellation" messageRef="Message_Cancel" instantiate="false">
+      <bpmn:incoming>Flow_Gateway_Receive</bpmn:incoming><bpmn:outgoing>Flow_Receive_End</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:endEvent id="End_1">
+      <bpmn:incoming>Flow_Catch_End</bpmn:incoming><bpmn:incoming>Flow_Receive_End</bpmn:incoming>
+      <bpmn:incoming>Flow_Boundary_Timer_End</bpmn:incoming><bpmn:incoming>Flow_Boundary_Message_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_User" sourceRef="Start_1" targetRef="User_Review" />
+    <bpmn:sequenceFlow id="Flow_User_Service" sourceRef="User_Review" targetRef="Service_Check" />
+    <bpmn:sequenceFlow id="Flow_Service_Manual" sourceRef="Service_Check" targetRef="Manual_File" />
+    <bpmn:sequenceFlow id="Flow_Manual_Throw" sourceRef="Manual_File" targetRef="Throw_Message" />
+    <bpmn:sequenceFlow id="Flow_Throw_Gateway" sourceRef="Throw_Message" targetRef="Gateway_Event" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Catch" sourceRef="Gateway_Event" targetRef="Catch_Message" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Receive" sourceRef="Gateway_Event" targetRef="Receive_Cancel" />
+    <bpmn:sequenceFlow id="Flow_Catch_End" sourceRef="Catch_Message" targetRef="End_1" />
+    <bpmn:sequenceFlow id="Flow_Receive_End" sourceRef="Receive_Cancel" targetRef="End_1" />
+    <bpmn:sequenceFlow id="Flow_Boundary_Timer_End" sourceRef="Boundary_Timer" targetRef="End_1" />
+    <bpmn:sequenceFlow id="Flow_Boundary_Message_End" sourceRef="Boundary_Message" targetRef="End_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_AdvancedEvents">
+    <bpmndi:BPMNPlane id="Plane_AdvancedEvents" bpmnElement="Process_AdvancedEvents">
+      <bpmndi:BPMNShape id="Shape_Start" bpmnElement="Start_1"><dc:Bounds x="40" y="240" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_User" bpmnElement="User_Review"><dc:Bounds x="110" y="220" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Boundary_Timer" bpmnElement="Boundary_Timer"><dc:Bounds x="142" y="282" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Service" bpmnElement="Service_Check"><dc:Bounds x="250" y="220" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Boundary_Message" bpmnElement="Boundary_Message"><dc:Bounds x="282" y="282" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Manual" bpmnElement="Manual_File"><dc:Bounds x="390" y="220" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Throw" bpmnElement="Throw_Message"><dc:Bounds x="530" y="242" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway" bpmnElement="Gateway_Event"><dc:Bounds x="610" y="235" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Catch" bpmnElement="Catch_Message"><dc:Bounds x="710" y="172" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Receive" bpmnElement="Receive_Cancel"><dc:Bounds x="690" y="300" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End" bpmnElement="End_1"><dc:Bounds x="860" y="242" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Start_User" bpmnElement="Flow_Start_User"><di:waypoint x="76" y="258" /><di:waypoint x="110" y="258" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_User_Service" bpmnElement="Flow_User_Service"><di:waypoint x="210" y="258" /><di:waypoint x="250" y="258" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Service_Manual" bpmnElement="Flow_Service_Manual"><di:waypoint x="350" y="258" /><di:waypoint x="390" y="258" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Manual_Throw" bpmnElement="Flow_Manual_Throw"><di:waypoint x="490" y="258" /><di:waypoint x="530" y="258" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Throw_Gateway" bpmnElement="Flow_Throw_Gateway"><di:waypoint x="566" y="258" /><di:waypoint x="610" y="258" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Gateway_Catch" bpmnElement="Flow_Gateway_Catch"><di:waypoint x="635" y="235" /><di:waypoint x="635" y="190" /><di:waypoint x="710" y="190" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Gateway_Receive" bpmnElement="Flow_Gateway_Receive"><di:waypoint x="635" y="285" /><di:waypoint x="635" y="340" /><di:waypoint x="690" y="340" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Catch_End" bpmnElement="Flow_Catch_End"><di:waypoint x="746" y="190" /><di:waypoint x="878" y="190" /><di:waypoint x="878" y="242" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Receive_End" bpmnElement="Flow_Receive_End"><di:waypoint x="790" y="340" /><di:waypoint x="878" y="340" /><di:waypoint x="878" y="278" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Boundary_Timer_End" bpmnElement="Flow_Boundary_Timer_End"><di:waypoint x="160" y="318" /><di:waypoint x="160" y="430" /><di:waypoint x="878" y="430" /><di:waypoint x="878" y="278" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Boundary_Message_End" bpmnElement="Flow_Boundary_Message_End"><di:waypoint x="300" y="318" /><di:waypoint x="300" y="400" /><di:waypoint x="850" y="400" /><di:waypoint x="878" y="278" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

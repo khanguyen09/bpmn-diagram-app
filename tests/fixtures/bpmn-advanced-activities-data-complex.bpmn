@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+  id="Definitions_Advanced"
+  targetNamespace="https://the-experience.blog/bpmn/advanced">
+  <bpmn:process id="Process_Main" name="Advanced authoring" isExecutable="false">
+    <bpmn:startEvent id="Start_Main" name="Start"><bpmn:outgoing>Flow_Start_Split</bpmn:outgoing></bpmn:startEvent>
+    <bpmn:parallelGateway id="Gateway_Split" name="Prepare in parallel">
+      <bpmn:incoming>Flow_Start_Split</bpmn:incoming>
+      <bpmn:outgoing>Flow_Split_Sub</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Split_Call</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:subProcess id="SubProcess_Review" name="Review details" triggeredByEvent="false">
+      <bpmn:incoming>Flow_Split_Sub</bpmn:incoming>
+      <bpmn:outgoing>Flow_Sub_Join</bpmn:outgoing>
+      <bpmn:startEvent id="Start_Sub"><bpmn:outgoing>Flow_Sub_Task</bpmn:outgoing></bpmn:startEvent>
+      <bpmn:task id="Task_Sub" name="Inspect"><bpmn:incoming>Flow_Sub_Task</bpmn:incoming><bpmn:outgoing>Flow_Task_EndSub</bpmn:outgoing></bpmn:task>
+      <bpmn:endEvent id="End_Sub"><bpmn:incoming>Flow_Task_EndSub</bpmn:incoming></bpmn:endEvent>
+      <bpmn:sequenceFlow id="Flow_Sub_Task" sourceRef="Start_Sub" targetRef="Task_Sub" />
+      <bpmn:sequenceFlow id="Flow_Task_EndSub" sourceRef="Task_Sub" targetRef="End_Sub" />
+    </bpmn:subProcess>
+    <bpmn:callActivity id="Call_Reused" name="Reuse checks" calledElement="Process_Reused">
+      <bpmn:incoming>Flow_Split_Call</bpmn:incoming>
+      <bpmn:outgoing>Flow_Call_Join</bpmn:outgoing>
+      <bpmn:dataInputAssociation id="DataInput_Draft">
+        <bpmn:sourceRef>DataObjectRef_Draft</bpmn:sourceRef>
+      </bpmn:dataInputAssociation>
+      <bpmn:dataOutputAssociation id="DataOutput_Archive">
+        <bpmn:targetRef>DataStoreRef_Archive</bpmn:targetRef>
+      </bpmn:dataOutputAssociation>
+    </bpmn:callActivity>
+    <bpmn:complexGateway id="Gateway_Join" name="Join when documented" gatewayDirection="Converging">
+      <bpmn:incoming>Flow_Sub_Join</bpmn:incoming>
+      <bpmn:incoming>Flow_Call_Join</bpmn:incoming>
+      <bpmn:outgoing>Flow_Join_End</bpmn:outgoing>
+      <bpmn:activationCondition xsi:type="bpmn:tFormalExpression">Both branches documented</bpmn:activationCondition>
+    </bpmn:complexGateway>
+    <bpmn:endEvent id="End_Main" name="Done"><bpmn:incoming>Flow_Join_End</bpmn:incoming></bpmn:endEvent>
+    <bpmn:dataObject id="DataObject_Draft" name="Draft" isCollection="false" />
+    <bpmn:dataObjectReference id="DataObjectRef_Draft" name="Draft input" dataObjectRef="DataObject_Draft" />
+    <bpmn:dataStoreReference id="DataStoreRef_Archive" name="Archive" dataStoreRef="DataStore_Archive" />
+    <bpmn:sequenceFlow id="Flow_Start_Split" sourceRef="Start_Main" targetRef="Gateway_Split" />
+    <bpmn:sequenceFlow id="Flow_Split_Sub" sourceRef="Gateway_Split" targetRef="SubProcess_Review" />
+    <bpmn:sequenceFlow id="Flow_Split_Call" sourceRef="Gateway_Split" targetRef="Call_Reused" />
+    <bpmn:sequenceFlow id="Flow_Sub_Join" sourceRef="SubProcess_Review" targetRef="Gateway_Join" />
+    <bpmn:sequenceFlow id="Flow_Call_Join" sourceRef="Call_Reused" targetRef="Gateway_Join" />
+    <bpmn:sequenceFlow id="Flow_Join_End" sourceRef="Gateway_Join" targetRef="End_Main" />
+  </bpmn:process>
+  <bpmn:process id="Process_Reused" name="Reusable checks" isExecutable="false" />
+  <bpmn:dataStore id="DataStore_Archive" name="Editorial archive" />
+  <bpmndi:BPMNDiagram id="Diagram_Advanced">
+    <bpmndi:BPMNPlane id="Plane_Advanced" bpmnElement="Process_Main">
+      <bpmndi:BPMNShape id="Shape_Start_Main" bpmnElement="Start_Main"><dc:Bounds x="40" y="202" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_Split" bpmnElement="Gateway_Split"><dc:Bounds x="120" y="195" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_SubProcess_Review" bpmnElement="SubProcess_Review" isExpanded="true"><dc:Bounds x="220" y="80" width="360" height="200" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Start_Sub" bpmnElement="Start_Sub"><dc:Bounds x="250" y="162" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Task_Sub" bpmnElement="Task_Sub"><dc:Bounds x="330" y="140" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_Sub" bpmnElement="End_Sub"><dc:Bounds x="490" y="162" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Call_Reused" bpmnElement="Call_Reused"><dc:Bounds x="300" y="340" width="140" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_DataObjectRef_Draft" bpmnElement="DataObjectRef_Draft"><dc:Bounds x="180" y="350" width="36" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_DataStoreRef_Archive" bpmnElement="DataStoreRef_Archive"><dc:Bounds x="500" y="350" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway_Join" bpmnElement="Gateway_Join"><dc:Bounds x="650" y="195" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End_Main" bpmnElement="End_Main"><dc:Bounds x="760" y="202" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Flow_Start_Split" bpmnElement="Flow_Start_Split"><di:waypoint x="76" y="220" /><di:waypoint x="120" y="220" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Split_Sub" bpmnElement="Flow_Split_Sub"><di:waypoint x="145" y="195" /><di:waypoint x="145" y="120" /><di:waypoint x="220" y="120" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Split_Call" bpmnElement="Flow_Split_Call"><di:waypoint x="145" y="245" /><di:waypoint x="145" y="380" /><di:waypoint x="300" y="380" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Sub_Join" bpmnElement="Flow_Sub_Join"><di:waypoint x="580" y="120" /><di:waypoint x="675" y="120" /><di:waypoint x="675" y="195" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Call_Join" bpmnElement="Flow_Call_Join"><di:waypoint x="440" y="380" /><di:waypoint x="675" y="380" /><di:waypoint x="675" y="245" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Join_End" bpmnElement="Flow_Join_End"><di:waypoint x="700" y="220" /><di:waypoint x="760" y="220" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Sub_Task" bpmnElement="Flow_Sub_Task"><di:waypoint x="286" y="180" /><di:waypoint x="330" y="180" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Flow_Task_EndSub" bpmnElement="Flow_Task_EndSub"><di:waypoint x="430" y="180" /><di:waypoint x="490" y="180" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_DataInput_Draft" bpmnElement="DataInput_Draft"><di:waypoint x="216" y="375" /><di:waypoint x="300" y="375" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_DataOutput_Archive" bpmnElement="DataOutput_Archive"><di:waypoint x="440" y="375" /><di:waypoint x="500" y="375" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

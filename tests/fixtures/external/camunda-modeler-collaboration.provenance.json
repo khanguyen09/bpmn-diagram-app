@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "fixture": "camunda-modeler-collaboration.bpmn",
+  "artifactRole": "immutable-upstream-fixture",
+  "source": {
+    "organization": "Camunda",
+    "repository": "https://github.com/camunda/camunda-modeler",
+    "commit": "9614b85d3073ea0f91233d473ed24c91ac2d4db1",
+    "officialSource": "https://github.com/camunda/camunda-modeler/blob/9614b85d3073ea0f91233d473ed24c91ac2d4db1/client/src/plugins/camunda-plugin/start-instance-tool/util/__tests__/fixtures/collaboration_not_executable.bpmn",
+    "rawSource": "https://raw.githubusercontent.com/camunda/camunda-modeler/9614b85d3073ea0f91233d473ed24c91ac2d4db1/client/src/plugins/camunda-plugin/start-instance-tool/util/__tests__/fixtures/collaboration_not_executable.bpmn",
+    "retrievedAt": "2026-07-30T16:02:03Z"
+  },
+  "producerEvidence": {
+    "tool": "Camunda Modeler",
+    "version": "3.7.0-dev.20200128",
+    "releaseEvidence": null,
+    "evidence": "xml-metadata",
+    "unknownFields": ["exportDate", "exportPlatform", "authoringSteps"],
+    "note": "Tool and version are declared by the upstream XML; missing export metadata is not inferred."
+  },
+  "license": {
+    "spdx": "MIT",
+    "source": "https://github.com/camunda/camunda-modeler/blob/9614b85d3073ea0f91233d473ed24c91ac2d4db1/LICENSE"
+  },
+  "integrity": {
+    "algorithm": "sha256",
+    "value": "15c294fb8a8637989215674e41a60729eb821dccbd8fcf150b565e7ce9584ace"
+  },
+  "namespaces": [
+    "http://www.omg.org/spec/BPMN/20100524/DI",
+    "http://www.omg.org/spec/BPMN/20100524/MODEL",
+    "http://www.omg.org/spec/DD/20100524/DC"
+  ],
+  "independenceBasis": "Byte-original fixture from the official Camunda Modeler repository, outside TEB.",
+  "claimBoundary": {
+    "id": "camunda-modeler-collaboration-core-v1",
+    "feature": "collaboration",
+    "minimumTebProfile": "teb-collaboration-starter@1",
+    "semanticAssertions": [
+      { "id": "Collaboration_1hcwsxy", "type": "bpmn:Collaboration", "parentId": "Definitions_0m3i0zk" },
+      { "id": "Participant_06rtacw", "type": "bpmn:Participant", "parentId": "Collaboration_1hcwsxy" },
+      { "id": "Process_1tp2lk4", "type": "bpmn:Process", "parentId": "Definitions_0m3i0zk" },
+      { "id": "StartEvent_1", "type": "bpmn:StartEvent", "parentId": "Process_1tp2lk4" }
+    ],
+    "propertyAssertions": [],
+    "referenceAssertions": [
+      { "elementId": "Participant_06rtacw", "property": "processRef", "targetIds": ["Process_1tp2lk4"] }
+    ],
+    "di": {
+      "shapes": [
+        { "id": "Participant_06rtacw_di", "elementId": "Participant_06rtacw" },
+        { "id": "_BPMNShape_StartEvent_2", "elementId": "StartEvent_1" }
+      ],
+      "edges": []
+    },
+    "expectedTeb": {
+      "accepted": true,
+      "safeToPersist": true,
+      "readyToSeal": false,
+      "ruleIds": ["BPMN-COLLAB-NAME-001", "BPMN-CONNECT-001", "BPMN-MESSAGE-003"]
+    },
+    "exclusions": [
+      "full-bpmn-2.0-conformance",
+      "workflow-engine-execution",
+      "universal-interoperability",
+      "vendor-extension-preservation"
+    ],
+    "statement": "Raw moddle and TEB canonical round-trip for the declared Collaboration IDs, references and DI only."
+  }
+}

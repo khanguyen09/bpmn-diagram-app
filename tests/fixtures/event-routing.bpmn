@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_EventRouting" targetNamespace="https://the-experience-blogs.local/bpmn">
+  <bpmn:message id="Message_Approved" name="Approval received" />
+  <bpmn:message id="Message_Cancelled" name="Cancellation received" />
+  <bpmn:process id="Process_EventRouting" name="Wait for first event" isExecutable="false">
+    <bpmn:startEvent id="Start_1" name="Request sent">
+      <bpmn:outgoing>Flow_Start_Gateway</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:eventBasedGateway id="Gateway_Event" name="Wait for response" instantiate="false" eventGatewayType="Exclusive">
+      <bpmn:incoming>Flow_Start_Gateway</bpmn:incoming>
+      <bpmn:outgoing>Flow_Gateway_Message</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_Timer</bpmn:outgoing>
+      <bpmn:outgoing>Flow_Gateway_Receive</bpmn:outgoing>
+    </bpmn:eventBasedGateway>
+    <bpmn:intermediateCatchEvent id="Catch_Message" name="Approved">
+      <bpmn:incoming>Flow_Gateway_Message</bpmn:incoming>
+      <bpmn:outgoing>Flow_Message_End</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_Approved" messageRef="Message_Approved" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:intermediateCatchEvent id="Catch_Timer" name="Timeout">
+      <bpmn:incoming>Flow_Gateway_Timer</bpmn:incoming>
+      <bpmn:outgoing>Flow_Timer_End</bpmn:outgoing>
+      <bpmn:timerEventDefinition id="TimerEventDefinition_Timeout">
+        <bpmn:timeDuration xsi:type="bpmn:tFormalExpression">PT15M</bpmn:timeDuration>
+      </bpmn:timerEventDefinition>
+    </bpmn:intermediateCatchEvent>
+    <bpmn:receiveTask id="Receive_Cancel" name="Cancellation" messageRef="Message_Cancelled" instantiate="false">
+      <bpmn:incoming>Flow_Gateway_Receive</bpmn:incoming>
+      <bpmn:outgoing>Flow_Receive_End</bpmn:outgoing>
+    </bpmn:receiveTask>
+    <bpmn:endEvent id="End_1" name="Continue">
+      <bpmn:incoming>Flow_Message_End</bpmn:incoming>
+      <bpmn:incoming>Flow_Timer_End</bpmn:incoming>
+      <bpmn:incoming>Flow_Receive_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_Start_Gateway" sourceRef="Start_1" targetRef="Gateway_Event" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Message" sourceRef="Gateway_Event" targetRef="Catch_Message" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Timer" sourceRef="Gateway_Event" targetRef="Catch_Timer" />
+    <bpmn:sequenceFlow id="Flow_Gateway_Receive" sourceRef="Gateway_Event" targetRef="Receive_Cancel" />
+    <bpmn:sequenceFlow id="Flow_Message_End" sourceRef="Catch_Message" targetRef="End_1" />
+    <bpmn:sequenceFlow id="Flow_Timer_End" sourceRef="Catch_Timer" targetRef="End_1" />
+    <bpmn:sequenceFlow id="Flow_Receive_End" sourceRef="Receive_Cancel" targetRef="End_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="Diagram_EventRouting">
+    <bpmndi:BPMNPlane id="Plane_EventRouting" bpmnElement="Process_EventRouting">
+      <bpmndi:BPMNShape id="Shape_Start" bpmnElement="Start_1"><dc:Bounds x="80" y="232" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Gateway" bpmnElement="Gateway_Event"><dc:Bounds x="170" y="225" width="50" height="50" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Message" bpmnElement="Catch_Message"><dc:Bounds x="300" y="102" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Timer" bpmnElement="Catch_Timer"><dc:Bounds x="300" y="232" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_Receive" bpmnElement="Receive_Cancel"><dc:Bounds x="280" y="350" width="100" height="80" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Shape_End" bpmnElement="End_1"><dc:Bounds x="500" y="232" width="36" height="36" /></bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Edge_Start_Gateway" bpmnElement="Flow_Start_Gateway"><di:waypoint x="116" y="250" /><di:waypoint x="170" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Gateway_Message" bpmnElement="Flow_Gateway_Message"><di:waypoint x="195" y="225" /><di:waypoint x="195" y="120" /><di:waypoint x="300" y="120" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Gateway_Timer" bpmnElement="Flow_Gateway_Timer"><di:waypoint x="220" y="250" /><di:waypoint x="300" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Gateway_Receive" bpmnElement="Flow_Gateway_Receive"><di:waypoint x="195" y="275" /><di:waypoint x="195" y="390" /><di:waypoint x="280" y="390" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Message_End" bpmnElement="Flow_Message_End"><di:waypoint x="336" y="120" /><di:waypoint x="518" y="120" /><di:waypoint x="518" y="232" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Timer_End" bpmnElement="Flow_Timer_End"><di:waypoint x="336" y="250" /><di:waypoint x="500" y="250" /></bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Edge_Receive_End" bpmnElement="Flow_Receive_End"><di:waypoint x="380" y="390" /><di:waypoint x="518" y="390" /><di:waypoint x="518" y="268" /></bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>

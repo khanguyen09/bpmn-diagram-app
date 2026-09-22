@@ -1,0 +1,720 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../platform/database/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String         @id
+  name          String
+  email         String         @unique
+  emailVerified Boolean        @default(false)
+  image         String?
+  twoFactorEnabled Boolean @default(false)
+  twoFactors    TwoFactor[]
+  role          String         @default("OWNER")
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+  posts         Post[]         @relation("PostOwner")
+  revisions     PostRevision[] @relation("RevisionAuthor")
+  postCreateRequests PostCreateRequest[]
+  publications  Publication[]
+  publishedSnapshots PublishedArticleSnapshot[] @relation("PublishedSnapshotAuthor")
+  publishRequests PublishRequest[]
+  processModelFolders ProcessModelFolder[]
+  processModels ProcessModel[] @relation("ProcessModelOwner")
+  processModelRevisions ProcessModelRevision[] @relation("ProcessModelRevisionAuthor")
+  processModelVersions ProcessModelVersion[] @relation("ProcessModelVersionAuthor")
+  processModelCreateRequests ProcessModelCreateRequest[]
+  taxonomyTerms TaxonomyTerm[]
+  taxonomyBulkRequests TaxonomyBulkRequest[]
+  publicationSchedules PublicationSchedule[]
+  publicationScheduleRequests PublicationScheduleRequest[]
+  newsletterIssues NewsletterIssue[]
+  imageAssets ImageAsset[]
+  articleLifecycleRequests ArticleLifecycleRequest[]
+  articleLifecycleEvents ArticleLifecycleEvent[] @relation("ArticleLifecycleActor")
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
+
+  @@index([identifier])
+  @@map("verification")
+}
+
+model TwoFactor {
+  id String @id
+  secret String
+  backupCodes String
+  userId String @unique
+  verified Boolean @default(false)
+  failedVerificationCount Int @default(0)
+  lockedUntil DateTime?
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([secret])
+  @@map("twoFactor")
+}
+
+model RateLimit {
+  id String @id
+  key String @unique
+  count Int
+  lastRequest BigInt
+  @@map("rateLimit")
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  UNPUBLISHED
+  ARCHIVED
+}
+
+enum ArticleSlugClaimKind {
+  CURRENT
+  FORMER
+}
+
+model Post {
+  id                   String             @id @default(uuid()) @db.Uuid
+  ownerId              String
+  slug                 String             @unique
+  status               PostStatus         @default(DRAFT)
+  currentVersion       Int                @default(0)
+  taxonomyVersion      Int                @default(0)
+  lifecycleVersion     Int                @default(0)
+  deletedFromStatus    PostStatus?
+  currentRevisionId    String?            @unique @db.Uuid
+  workingSchemaVersion Int                @default(1)
+  workingMetadata      Json
+  workingDocument      Json
+  workingPayloadHash   String
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  deletedAt            DateTime?
+  owner                User               @relation("PostOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  currentRevision      PostRevision?      @relation("CurrentRevision", fields: [currentRevisionId, id], references: [id, postId], onDelete: Restrict)
+  revisions            PostRevision[]     @relation("PostRevisions")
+  saveRequests         DraftSaveRequest[]
+  createRequest        PostCreateRequest?
+  publication          Publication?
+  publishedSnapshots   PublishedArticleSnapshot[]
+  publishRequests      PublishRequest[]
+  primaryTopicId       String?            @db.Uuid
+  primaryTopic         TaxonomyTerm?       @relation("PostPrimaryTopic", fields: [primaryTopicId], references: [id], onDelete: Restrict)
+  tagAssignments       PostTagAssignment[]
+  publicationSchedules PublicationSchedule[]
+  lifecycleRequests    ArticleLifecycleRequest[]
+  lifecycleEvents      ArticleLifecycleEvent[]
+  slugClaims           ArticleSlugClaim[]
+
+  @@index([ownerId, status, updatedAt])
+  @@unique([currentRevisionId, id])
+  @@unique([id, ownerId])
+}
+
+model PostRevision {
+  id            String             @id @default(uuid()) @db.Uuid
+  postId        String             @db.Uuid
+  version       Int
+  baseVersion   Int
+  schemaVersion Int
+  metadata      Json
+  document      Json
+  payloadHash   String
+  authorId      String
+  createdAt     DateTime           @default(now())
+  post          Post               @relation("PostRevisions", fields: [postId], references: [id], onDelete: Restrict)
+  author        User               @relation("RevisionAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  currentFor    Post?              @relation("CurrentRevision")
+  saveRequests  DraftSaveRequest[]
+  createRequest PostCreateRequest?
+  publishedSnapshots PublishedArticleSnapshot[]
+  publishRequests PublishRequest[]
+  publicationSchedules PublicationSchedule[]
+
+  @@unique([postId, version])
+  @@unique([id, postId])
+  @@index([postId, createdAt])
+}
+
+model PostCreateRequest {
+  id                  String       @id @default(uuid()) @db.Uuid
+  ownerId             String
+  idempotencyKey      String
+  requestHash         String
+  postId              String       @unique @db.Uuid
+  revisionId          String       @unique @db.Uuid
+  acknowledgedVersion Int
+  createdAt           DateTime     @default(now())
+  owner               User         @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  post                Post         @relation(fields: [postId, ownerId], references: [id, ownerId], onDelete: Restrict)
+  revision            PostRevision @relation(fields: [revisionId, postId], references: [id, postId], onDelete: Restrict)
+
+  @@unique([ownerId, idempotencyKey])
+  @@unique([postId, ownerId])
+  @@unique([revisionId, postId])
+  @@index([revisionId])
+}
+
+model DraftSaveRequest {
+  id                 String       @id @default(uuid()) @db.Uuid
+  postId             String       @db.Uuid
+  idempotencyKey     String
+  requestHash        String
+  baseVersion        Int
+  acknowledgedVersion Int
+  revisionId         String       @db.Uuid
+  createdAt          DateTime     @default(now())
+  post               Post         @relation(fields: [postId], references: [id], onDelete: Restrict)
+  revision           PostRevision @relation(fields: [revisionId, postId], references: [id, postId], onDelete: Restrict)
+
+  @@unique([postId, idempotencyKey])
+  @@index([revisionId])
+}
+
+enum ProcessModelPurpose {
+  AS_IS
+  TO_BE
+  REFERENCE
+}
+
+enum ProcessModelRevisionSource {
+  CREATED
+  EDITED
+  IMPORTED
+  RESTORED
+}
+
+enum ProcessModelCommandOperation {
+  SAVE_DRAFT
+  CREATE_VERSION
+  RESTORE_VERSION
+}
+
+model ProcessModelFolder {
+  id             String         @id @db.Uuid
+  ownerId        String
+  name           String
+  normalizedName String
+  revision       Int            @default(0)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  owner          User           @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  models         ProcessModel[]
+
+  @@unique([id, ownerId])
+  @@unique([ownerId, normalizedName])
+}
+
+model ProcessModel {
+  id                    String                       @id @default(uuid()) @db.Uuid
+  ownerId               String
+  title                 String
+  description           String                      @default("")
+  purpose               ProcessModelPurpose         @default(AS_IS)
+  profileId             String
+  folderId              String?                      @db.Uuid
+  folderRevision        Int                          @default(0)
+  folder                ProcessModelFolder?          @relation(fields: [folderId, ownerId], references: [id, ownerId], onDelete: Restrict)
+  currentRevisionNumber Int                          @default(0)
+  currentRevisionId     String?                      @unique @db.Uuid
+  latestVersionNumber   Int                          @default(0)
+  createdAt             DateTime                     @default(now())
+  updatedAt             DateTime                     @updatedAt
+  archivedAt            DateTime?
+  owner                 User                         @relation("ProcessModelOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  currentRevision       ProcessModelRevision?        @relation("CurrentProcessModelRevision", fields: [currentRevisionId, id], references: [id, processModelId], onDelete: Restrict)
+  revisions             ProcessModelRevision[]       @relation("ProcessModelRevisions")
+  versions              ProcessModelVersion[]
+  commandReceipts       ProcessModelCommandReceipt[]
+  createRequest         ProcessModelCreateRequest?
+  publishedEmbeds       PublishedBpmnEmbed[]
+
+  @@unique([currentRevisionId, id])
+  @@unique([id, ownerId])
+  @@index([ownerId, archivedAt, updatedAt])
+  @@index([ownerId, folderId, archivedAt, updatedAt])
+}
+
+model ProcessModelRevision {
+  id                 String                     @id @default(uuid()) @db.Uuid
+  processModelId     String                     @db.Uuid
+  revisionNumber     Int
+  baseRevisionNumber Int
+  title              String
+  description        String
+  purpose            ProcessModelPurpose
+  profileId          String
+  canonicalXml       String
+  xmlChecksum        String
+  source             ProcessModelRevisionSource
+  authorId           String
+  createdAt          DateTime                   @default(now())
+  processModel       ProcessModel               @relation("ProcessModelRevisions", fields: [processModelId], references: [id], onDelete: Restrict)
+  author             User                       @relation("ProcessModelRevisionAuthor", fields: [authorId], references: [id], onDelete: Restrict)
+  currentFor         ProcessModel?              @relation("CurrentProcessModelRevision")
+  versions           ProcessModelVersion[]
+  commandReceipts    ProcessModelCommandReceipt[]
+
+  @@unique([processModelId, revisionNumber])
+  @@unique([id, processModelId])
+  @@index([processModelId, createdAt])
+}
+
+model ProcessModelVersion {
+  id               String                       @id @default(uuid()) @db.Uuid
+  processModelId   String                       @db.Uuid
+  revisionId       String                       @db.Uuid
+  versionNumber    Int
+  note             String                       @default("")
+  profileId        String
+  xmlChecksum      String
+  createdBy        String
+  createdAt        DateTime                     @default(now())
+  processModel     ProcessModel                 @relation(fields: [processModelId], references: [id], onDelete: Restrict)
+  revision         ProcessModelRevision         @relation(fields: [revisionId, processModelId], references: [id, processModelId], onDelete: Restrict)
+  creator          User                         @relation("ProcessModelVersionAuthor", fields: [createdBy], references: [id], onDelete: Restrict)
+  commandReceipts  ProcessModelCommandReceipt[]
+  publishedEmbeds  PublishedBpmnEmbed[]
+
+  @@unique([processModelId, versionNumber])
+  @@unique([id, processModelId])
+  @@unique([id, processModelId, revisionId, xmlChecksum])
+  @@index([processModelId, createdAt])
+}
+
+model ProcessModelCreateRequest {
+  id             String       @id @default(uuid()) @db.Uuid
+  ownerId        String
+  idempotencyKey String
+  requestHash    String
+  processModelId String       @unique @db.Uuid
+  createdAt      DateTime     @default(now())
+  owner          User         @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  processModel   ProcessModel @relation(fields: [processModelId], references: [id], onDelete: Restrict)
+
+  @@unique([ownerId, idempotencyKey])
+}
+
+model ProcessModelCommandReceipt {
+  id                         String                       @id @default(uuid()) @db.Uuid
+  processModelId             String                       @db.Uuid
+  idempotencyKey             String
+  operation                  ProcessModelCommandOperation
+  requestHash                String
+  expectedRevisionNumber     Int
+  acknowledgedRevisionNumber Int
+  revisionId                 String                       @db.Uuid
+  resultVersionId            String?                      @db.Uuid
+  createdAt                  DateTime                     @default(now())
+  processModel               ProcessModel                 @relation(fields: [processModelId], references: [id], onDelete: Restrict)
+  revision                   ProcessModelRevision         @relation(fields: [revisionId, processModelId], references: [id, processModelId], onDelete: Restrict)
+  resultVersion              ProcessModelVersion?         @relation(fields: [resultVersionId, processModelId], references: [id, processModelId], onDelete: Restrict)
+
+  @@unique([processModelId, idempotencyKey])
+  @@index([revisionId])
+  @@index([resultVersionId])
+}
+
+model Publication {
+  id               String                     @id @default(uuid()) @db.Uuid
+  postId           String                     @unique @db.Uuid
+  ownerId          String
+  slug             String                     @unique
+  generation       Int                        @default(0)
+  activeSnapshotId String?                    @unique @db.Uuid
+  createdAt        DateTime                   @default(now())
+  updatedAt        DateTime                   @updatedAt
+  post             Post                       @relation(fields: [postId, ownerId], references: [id, ownerId], onDelete: Restrict)
+  owner            User                       @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  snapshots        PublishedArticleSnapshot[] @relation("PublicationSnapshots")
+  activeSnapshot   PublishedArticleSnapshot?  @relation("ActivePublishedSnapshot", fields: [activeSnapshotId, id], references: [id, publicationId], onDelete: Restrict)
+  publishRequests  PublishRequest[]
+
+  @@unique([id, postId])
+  @@unique([id, postId, ownerId])
+  @@unique([postId, ownerId])
+  @@unique([activeSnapshotId, id])
+  @@index([ownerId, updatedAt])
+}
+
+model PublishedArticleSnapshot {
+  id                String                 @id @default(uuid()) @db.Uuid
+  publicationId     String                 @db.Uuid
+  postId            String                 @db.Uuid
+  ownerId           String
+  postRevisionId    String                 @db.Uuid
+  generation        Int
+  schemaVersion     Int
+  slug              String
+  metadata          Json
+  document          Json
+  sourcePayloadHash String
+  snapshotHash      String
+  publishedBy       String
+  publishedAt       DateTime               @default(now())
+  sourceTaxonomyVersion Int                @default(0)
+  taxonomyProjection Json                  @default("{}")
+  searchDocument     String                @default("") @db.Text
+  publication       Publication            @relation("PublicationSnapshots", fields: [publicationId, postId, ownerId], references: [id, postId, ownerId], onDelete: Restrict)
+  post              Post                   @relation(fields: [postId, ownerId], references: [id, ownerId], onDelete: Restrict)
+  sourceRevision    PostRevision           @relation(fields: [postRevisionId, postId], references: [id, postId], onDelete: Restrict)
+  publisher         User                   @relation("PublishedSnapshotAuthor", fields: [publishedBy], references: [id], onDelete: Restrict)
+  activeFor         Publication?           @relation("ActivePublishedSnapshot")
+  bpmnEmbeds        PublishedBpmnEmbed[]
+  publishRequests   PublishRequest[]
+  newsletterIssues  NewsletterIssueSnapshot[]
+
+  @@unique([publicationId, generation])
+  @@index([postId, postRevisionId])
+  @@unique([id, publicationId])
+  @@unique([id, postId])
+  @@unique([id, ownerId])
+  @@index([publishedAt])
+}
+
+enum TaxonomyTermKind {
+  TOPIC
+  TAG
+}
+
+enum TaxonomyTermStatus {
+  ACTIVE
+  RETIRED
+}
+
+model TaxonomyTerm {
+  id             String               @id @default(uuid()) @db.Uuid
+  ownerId        String
+  kind           TaxonomyTermKind
+  status         TaxonomyTermStatus   @default(ACTIVE)
+  slug           String
+  label          String
+  normalizedKey  String
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @updatedAt
+  owner          User                 @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  primaryFor     Post[]               @relation("PostPrimaryTopic")
+  tagAssignments PostTagAssignment[]
+
+  @@unique([ownerId, kind, normalizedKey])
+  @@unique([ownerId, kind, slug])
+  @@unique([id, ownerId])
+  @@index([ownerId, kind, status, label])
+}
+
+model PostTagAssignment {
+  postId     String       @db.Uuid
+  termId     String       @db.Uuid
+  ownerId    String
+  createdAt  DateTime     @default(now())
+  post       Post         @relation(fields: [postId, ownerId], references: [id, ownerId], onDelete: Cascade)
+  term       TaxonomyTerm @relation(fields: [termId, ownerId], references: [id, ownerId], onDelete: Restrict)
+
+  @@id([postId, termId])
+  @@index([ownerId, termId, postId])
+}
+
+model TaxonomyBulkRequest {
+  id             String   @id @default(uuid()) @db.Uuid
+  ownerId        String
+  idempotencyKey String
+  requestHash    String
+  result         Json
+  createdAt      DateTime @default(now())
+  owner          User     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+
+  @@unique([ownerId, idempotencyKey])
+}
+
+enum PublicationScheduleState {
+  PENDING
+  CLAIMED
+  SUCCEEDED
+  CANCELLED
+  STALE
+  FAILED
+}
+
+model PublicationSchedule {
+  id                            String                   @id @default(uuid()) @db.Uuid
+  ownerId                       String
+  postId                        String                   @db.Uuid
+  postRevisionId                String                   @db.Uuid
+  expectedDraftVersion          Int
+  expectedTaxonomyVersion       Int
+  expectedLifecycleVersion      Int
+  expectedPublicationGeneration Int
+  expectedPins                  Json
+  dueAt                         DateTime
+  timeZone                      String
+  state                         PublicationScheduleState @default(PENDING)
+  leaseTokenHash                String?
+  leaseUntil                    DateTime?
+  fence                         Int                      @default(0)
+  failureCode                   String?
+  createdAt                     DateTime                 @default(now())
+  updatedAt                     DateTime                 @updatedAt
+  owner                         User                     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  post                          Post                     @relation(fields: [postId, ownerId], references: [id, ownerId], onDelete: Restrict)
+  revision                      PostRevision             @relation(fields: [postRevisionId, postId], references: [id, postId], onDelete: Restrict)
+  requests                      PublicationScheduleRequest[]
+
+  @@index([ownerId, state, dueAt, id])
+}
+
+model PublicationScheduleRequest {
+  id             String              @id @default(uuid()) @db.Uuid
+  ownerId        String
+  scheduleId     String              @db.Uuid
+  operation      String
+  idempotencyKey String
+  requestHash    String
+  result         Json
+  createdAt      DateTime            @default(now())
+  owner          User                @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  schedule       PublicationSchedule @relation(fields: [scheduleId], references: [id], onDelete: Restrict)
+
+  @@unique([ownerId, idempotencyKey])
+  @@index([scheduleId])
+}
+
+enum SubscriberState {
+  PENDING_CONFIRMATION
+  ACTIVE
+  UNSUBSCRIBED
+  SUPPRESSED
+}
+
+enum SubscriberCapabilityPurpose {
+  CONFIRM
+  UNSUBSCRIBE
+}
+
+model Subscriber {
+  id              String              @id @default(uuid()) @db.Uuid
+  normalizedEmail String
+  emailHash       String              @unique
+  state           SubscriberState     @default(PENDING_CONFIRMATION)
+  confirmedAt     DateTime?
+  unsubscribedAt  DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  capabilities    SubscriberCapability[]
+  captures        NewsletterCapture[]
+}
+
+model SubscriberCapability {
+  id           String                      @id @default(uuid()) @db.Uuid
+  subscriberId String                      @db.Uuid
+  purpose      SubscriberCapabilityPurpose
+  tokenHash    String                      @unique
+  expiresAt    DateTime
+  consumedAt   DateTime?
+  createdAt    DateTime                    @default(now())
+  subscriber   Subscriber                  @relation(fields: [subscriberId], references: [id], onDelete: Cascade)
+
+  @@index([subscriberId, purpose, expiresAt])
+}
+
+model NewsletterIssue {
+  id        String                    @id @default(uuid()) @db.Uuid
+  ownerId   String
+  title     String
+  subject   String
+  idempotencyKey String
+  requestHash String
+  createdAt DateTime                  @default(now())
+  owner     User                      @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  snapshots NewsletterIssueSnapshot[]
+  captures  NewsletterCapture[]
+
+  @@index([ownerId, createdAt])
+  @@unique([ownerId, idempotencyKey])
+}
+
+model NewsletterIssueSnapshot {
+  issueId    String                   @db.Uuid
+  snapshotId String                   @db.Uuid
+  position   Int
+  issue      NewsletterIssue          @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  snapshot   PublishedArticleSnapshot @relation(fields: [snapshotId], references: [id], onDelete: Restrict)
+
+  @@id([issueId, snapshotId])
+  @@unique([issueId, position])
+}
+
+model NewsletterCapture {
+  issueId     String          @db.Uuid
+  subscriberId String         @db.Uuid
+  status      String          @default("CAPTURED_LOCAL")
+  capturedAt  DateTime        @default(now())
+  issue       NewsletterIssue @relation(fields: [issueId], references: [id], onDelete: Restrict)
+  subscriber  Subscriber      @relation(fields: [subscriberId], references: [id], onDelete: Restrict)
+
+  @@id([issueId, subscriberId])
+  @@index([subscriberId, capturedAt])
+}
+
+model ArticleLifecycleRequest {
+  id                           String                @id @default(uuid()) @db.Uuid
+  ownerId                      String
+  postId                       String                @db.Uuid
+  idempotencyKey               String
+  operation                    String
+  requestHash                  String
+  expectedLifecycleVersion     Int
+  acknowledgedLifecycleVersion Int
+  result                       Json
+  createdAt                    DateTime              @default(now())
+  owner                        User                  @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  post                         Post                  @relation(fields: [postId, ownerId], references: [id, ownerId], onDelete: Restrict)
+
+  @@unique([postId, idempotencyKey])
+  @@index([ownerId, createdAt])
+}
+
+model ArticleLifecycleEvent {
+  id                     String      @id @default(uuid()) @db.Uuid
+  ownerId                String
+  postId                 String      @db.Uuid
+  actorId                String
+  operation              String
+  beforeStatus           PostStatus
+  afterStatus            PostStatus
+  beforeDeleted          Boolean
+  afterDeleted           Boolean
+  beforeSlug             String
+  afterSlug              String
+  beforeActiveSnapshotId String?     @db.Uuid
+  afterActiveSnapshotId  String?     @db.Uuid
+  lifecycleVersion       Int
+  impact                 Json
+  createdAt              DateTime    @default(now())
+  post                   Post        @relation(fields: [postId, ownerId], references: [id, ownerId], onDelete: Restrict)
+  actor                  User        @relation("ArticleLifecycleActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([ownerId, postId, createdAt])
+}
+
+model ArticleSlugClaim {
+  slug      String               @id
+  ownerId   String
+  postId    String               @db.Uuid
+  kind      ArticleSlugClaimKind
+  wasPublic Boolean              @default(false)
+  createdAt DateTime             @default(now())
+  updatedAt DateTime             @updatedAt
+  post      Post                 @relation(fields: [postId, ownerId], references: [id, ownerId], onDelete: Restrict)
+
+  @@index([ownerId, postId])
+}
+
+model PublishedBpmnEmbed {
+  snapshotId           String                      @db.Uuid
+  blockId              String
+  blockOrder           Int
+  ownerId              String
+  processModelId       String                      @db.Uuid
+  processModelVersionId String                     @db.Uuid
+  processModelRevisionId String                    @db.Uuid
+  xmlChecksum          String
+  displayProjection    Json
+  snapshot             PublishedArticleSnapshot    @relation(fields: [snapshotId, ownerId], references: [id, ownerId], onDelete: Restrict)
+  processModel         ProcessModel                @relation(fields: [processModelId, ownerId], references: [id, ownerId], onDelete: Restrict)
+  processModelVersion  ProcessModelVersion         @relation(fields: [processModelVersionId, processModelId, processModelRevisionId, xmlChecksum], references: [id, processModelId, revisionId, xmlChecksum], onDelete: Restrict)
+
+  @@id([snapshotId, blockId])
+  @@unique([snapshotId, blockOrder])
+  @@index([processModelVersionId])
+}
+
+model PublishRequest {
+  id                            String                   @id @default(uuid()) @db.Uuid
+  ownerId                       String
+  postId                        String                   @db.Uuid
+  publicationId                 String                   @db.Uuid
+  idempotencyKey                String
+  requestHash                   String
+  expectedDraftVersion          Int
+  expectedTaxonomyVersion       Int
+  expectedLifecycleVersion      Int
+  expectedPublicationGeneration Int
+  postRevisionId                String                   @db.Uuid
+  snapshotId                    String                   @db.Uuid
+  acknowledgedGeneration        Int
+  acknowledgedLifecycleVersion  Int
+  createdAt                     DateTime                 @default(now())
+  owner                         User                     @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  post                          Post                     @relation(fields: [postId, ownerId], references: [id, ownerId], onDelete: Restrict)
+  publication                   Publication              @relation(fields: [publicationId, postId, ownerId], references: [id, postId, ownerId], onDelete: Restrict)
+  postRevision                  PostRevision             @relation(fields: [postRevisionId, postId], references: [id, postId], onDelete: Restrict)
+  snapshot                      PublishedArticleSnapshot @relation(fields: [snapshotId, publicationId], references: [id, publicationId], onDelete: Restrict)
+
+  @@unique([postId, idempotencyKey])
+  @@index([snapshotId])
+}
+
+model ImageAsset {
+  id String @id @default(uuid()) @db.Uuid
+  ownerId String
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  digest String
+  data Bytes
+  byteLength Int
+  width Int
+  height Int
+  createdAt DateTime @default(now())
+  @@unique([ownerId, digest])
+  @@index([ownerId])
+}

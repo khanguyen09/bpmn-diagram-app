@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "artifactRole": "independent-test-parser-toolchain",
+  "package": "libxml2-wasm",
+  "version": "0.7.1",
+  "npmIntegrity": "sha512-aZpJJL/j6T3D+5TmhG4D0ylR3mN6UzmqmBjyb/p+zEAaouG6GpfHiUNUzKR3vKCEoJt/Z2L15XPDCVPuFJIQhg==",
+  "repository": "https://github.com/jameslan/libxml2-wasm",
+  "tag": "v0.7.1",
+  "commit": "bd487390c5378e63085cf1993905eccd73d37395",
+  "license": "MIT",
+  "engine": {
+    "name": "libxml2",
+    "version": "2.15.1",
+    "repository": "https://github.com/jameslan/libxml2",
+    "commit": "f52e859efe97cf3f0b78d731976402748878529a",
+    "license": "MIT",
+    "licenseSource": "https://github.com/jameslan/libxml2/blob/f52e859efe97cf3f0b78d731976402748878529a/Copyright"
+  },
+  "embeddedRuntime": {
+    "path": "lib/libxml2raw.mjs",
+    "bytes": 1099489,
+    "sha256": "8595df96c903c0c07f6f6be482a64fd37e6c514e2822c2fe6dfc0b0862e626e5"
+  },
+  "independenceBasis": "WASM/libxml2 implementation is independent from the production bpmn-moddle -> moddle-xml -> saxen parser lineage.",
+  "claimBoundary": "Independent XML implementation lineage only; not a second independent BPMN semantic validator or universal-conformance authority."
+}

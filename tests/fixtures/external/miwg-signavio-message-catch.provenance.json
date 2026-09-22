@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "fixture": "miwg-signavio-message-catch.bpmn",
+  "artifactRole": "immutable-upstream-fixture",
+  "source": {
+    "organization": "bpmn-miwg",
+    "repository": "https://github.com/bpmn-miwg/bpmn-miwg-test-suite",
+    "commit": "cb2629519cee6280ab521f99dc46a9815a221a35",
+    "officialSource": "https://github.com/bpmn-miwg/bpmn-miwg-test-suite/blob/cb2629519cee6280ab521f99dc46a9815a221a35/SAP%20Signavio%20Process%20Manager%2019.9.0/C.1.0-export.bpmn",
+    "rawSource": "https://raw.githubusercontent.com/bpmn-miwg/bpmn-miwg-test-suite/cb2629519cee6280ab521f99dc46a9815a221a35/SAP%20Signavio%20Process%20Manager%2019.9.0/C.1.0-export.bpmn",
+    "retrievedAt": "2026-08-01T05:14:53Z"
+  },
+  "producerEvidence": {
+    "tool": "Signavio Process Editor, http://www.signavio.com",
+    "version": "19.9.0",
+    "releaseEvidence": null,
+    "evidence": "xml-metadata",
+    "unknownFields": ["exportDate", "exportPlatform", "authoringSteps"],
+    "note": "Exporter metadata is declared by the byte-original SAP Signavio submission in the pinned BPMN MIWG corpus."
+  },
+  "license": {
+    "spdx": "CC-BY-3.0",
+    "source": "https://github.com/bpmn-miwg/bpmn-miwg-test-suite/blob/cb2629519cee6280ab521f99dc46a9815a221a35/LICENSE.txt"
+  },
+  "integrity": { "algorithm": "sha256", "value": "1efecf52906a7d3598ee49e0929133ed46bd76bbd83ec71290948c1ada44e02b" },
+  "namespaces": [
+    "http://www.omg.org/spec/BPMN/20100524/DI",
+    "http://www.omg.org/spec/BPMN/20100524/MODEL",
+    "http://www.omg.org/spec/BPMN/non-normative/extensions/i18n/1.0",
+    "http://www.omg.org/spec/DD/20100524/DC",
+    "http://www.omg.org/spec/DD/20100524/DI",
+    "http://www.signavio.com",
+    "http://www.w3.org/2001/XMLSchema-instance"
+  ],
+  "independenceBasis": "Byte-original SAP Signavio export submitted to the pinned BPMN MIWG interoperability corpus, independent from the bpmn-io producer family.",
+  "comparisonEvidence": {
+    "cohortId": "message-catch-owner-definition-di-v1",
+    "producerFamily": "sap-signavio",
+    "modelerFamily": "signavio-process-editor",
+    "scope": "message-catch-owner-definition-di"
+  },
+  "claimBoundary": {
+    "id": "miwg-signavio-message-catch-19-9-0",
+    "feature": "message-catch-event",
+    "minimumTebProfile": "teb-core-catching-events@1",
+    "semanticAssertions": [
+      { "id": "sid-FF72E926-605E-4EF6-9793-6AA4B05B213B", "type": "bpmn:IntermediateCatchEvent", "parentId": "sid-C379ECAF-5378-4344-BF9C-2BF7D8B812C6" },
+      { "id": "sid-26ed7d8d-3d53-4f2d-9844-ef4441edcfca", "type": "bpmn:MessageEventDefinition", "parentId": "sid-FF72E926-605E-4EF6-9793-6AA4B05B213B" }
+    ],
+    "propertyAssertions": [],
+    "referenceAssertions": [],
+    "eventDefinitionAssertions": [
+      { "ownerId": "sid-FF72E926-605E-4EF6-9793-6AA4B05B213B", "definitionId": "sid-26ed7d8d-3d53-4f2d-9844-ef4441edcfca", "kind": "MESSAGE", "messageRefId": null }
+    ],
+    "di": {
+      "shapes": [{ "id": "sid-FF72E926-605E-4EF6-9793-6AA4B05B213B_gui", "elementId": "sid-FF72E926-605E-4EF6-9793-6AA4B05B213B" }],
+      "edges": []
+    },
+    "expectedTeb": { "accepted": false, "safeToPersist": false, "readyToSeal": false, "ruleIds": ["BPMN-PROFILE-004", "BPMN-SEC-002"] },
+    "exclusions": ["full-bpmn-2.0-conformance", "workflow-engine-execution", "universal-interoperability", "vendor-extension-preservation"],
+    "statement": "Raw moddle projection preserves a SAP Signavio Message Catch owner, nested definition and DI for bounded cross-vendor comparison; no messageRef, delivery or whole-diagram acceptance claim."
+  }
+}

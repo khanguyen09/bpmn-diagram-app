@@ -1,0 +1,84 @@
+{
+  "name": "bpmn-diagram-app",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "engines": {
+    "node": ">=24.18.0 <25"
+  },
+  "packageManager": "pnpm@10.12.4",
+  "pnpm": {
+    "overrides": {
+      "minimatch": "10.2.6",
+      "postcss": "8.5.28",
+      "fast-uri@3": "3.1.7",
+      "brace-expansion@5": "5.0.9",
+      "js-yaml@4": "4.3.2",
+      "nanoid@3": "3.3.18",
+      "@prisma/config>deepmerge-ts": "8.0.2",
+      "mysql2": "3.24.3",
+      "vitest": "4.1.11"
+    }
+  },
+  "scripts": {
+    "dev": "pnpm db:generate && next dev --webpack",
+    "build": "pnpm db:generate && next build --webpack",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test --project=chromium",
+    "test:e2e:mobile": "playwright test --project=mobile-chromium",
+    "test:e2e:install": "playwright install chromium firefox webkit",
+    "test:e2e:prepare": "tsx scripts/prepare-e2e-datastore.ts",
+    "db:generate": "prisma generate",
+    "db:validate": "prisma validate",
+    "db:migrate": "prisma migrate deploy",
+    "db:status": "prisma migrate status",
+    "owner:provision": "pnpm db:generate && tsx scripts/provision-owner.ts",
+    "setup:check": "node scripts/setup-local.mjs --check",
+    "setup:local": "node scripts/setup-local.mjs"
+  },
+  "dependencies": {
+    "@better-auth/prisma-adapter": "1.6.25",
+    "@prisma/adapter-pg": "7.9.1",
+    "@prisma/client": "7.9.1",
+    "@tailwindcss/postcss": "4.3.3",
+    "better-auth": "1.6.25",
+    "bpmn-js": "18.22.1",
+    "bpmn-moddle": "10.1.0",
+    "clsx": "2.1.1",
+    "dotenv": "17.4.2",
+    "lucide-react": "0.468.0",
+    "next": "16.3.3",
+    "pg": "8.22.0",
+    "qrcode": "1.5.4",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tailwind-merge": "2.6.0",
+    "tailwindcss": "4.3.3",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.12.1",
+    "@playwright/test": "1.62.0",
+    "@types/bpmn-moddle": "10.0.0",
+    "@types/node": "24.10.1",
+    "@types/pg": "8.20.0",
+    "@types/qrcode": "1.5.6",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "eslint": "9.39.1",
+    "eslint-config-next": "16.3.3",
+    "libxml2-wasm": "0.7.1",
+    "prisma": "7.9.1",
+    "tsx": "4.23.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11"
+  },
+  "description": "Self-hosted BPMN Studio with native modeling, durable revisions, folders and XML/SVG/PNG export.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/khanguyen09/bpmn-diagram-app.git"
+  }
+}

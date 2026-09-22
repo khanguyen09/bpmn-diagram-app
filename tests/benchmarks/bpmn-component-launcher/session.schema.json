@@ -1,0 +1,300 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://the-experience.local/schemas/sdd45-bpmn-component-launcher-session-v1.json",
+  "title": "SDD45 BPMN component launcher benchmark session",
+  "description": "One pseudonymous moderated benchmark session. This schema deliberately excludes names, email addresses, recordings and free-text notes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "studyId",
+    "sessionId",
+    "participantId",
+    "participantKind",
+    "experienceBand",
+    "disposition",
+    "implementationTeamMember",
+    "protocolVariant",
+    "buildRevision",
+    "startedAt",
+    "firstAttemptLauncherDiscovery",
+    "tasks"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0.0"
+    },
+    "studyId": {
+      "const": "sdd45-bpmn-component-launcher"
+    },
+    "sessionId": {
+      "type": "string",
+      "pattern": "^s_[a-z0-9_-]{4,64}$"
+    },
+    "participantId": {
+      "type": "string",
+      "pattern": "^p_[a-z0-9_-]{4,64}$"
+    },
+    "participantKind": {
+      "enum": ["human", "automated_preflight"]
+    },
+    "experienceBand": {
+      "enum": [
+        "new_or_occasional",
+        "regular_or_intermediate",
+        "not_applicable"
+      ]
+    },
+    "disposition": {
+      "enum": [
+        "complete",
+        "participant_withdrew",
+        "technical_failure",
+        "automated_preflight"
+      ]
+    },
+    "implementationTeamMember": {
+      "type": "boolean"
+    },
+    "protocolVariant": {
+      "enum": ["A", "B"]
+    },
+    "buildRevision": {
+      "type": "string",
+      "minLength": 7,
+      "maxLength": 120
+    },
+    "startedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "firstAttemptLauncherDiscovery": {
+      "type": ["boolean", "null"]
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 0,
+      "maxItems": 5,
+      "items": {
+        "$ref": "#/$defs/task"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "participantKind": {
+            "const": "automated_preflight"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "experienceBand": {
+            "const": "not_applicable"
+          },
+          "disposition": {
+            "const": "automated_preflight"
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "experienceBand": {
+            "enum": ["new_or_occasional", "regular_or_intermediate"]
+          },
+          "disposition": {
+            "enum": ["complete", "participant_withdrew", "technical_failure"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "disposition": {
+            "const": "complete"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "participantKind": {
+            "const": "human"
+          },
+          "firstAttemptLauncherDiscovery": {
+            "type": "boolean"
+          },
+          "tasks": {
+            "minItems": 5,
+            "maxItems": 5,
+            "items": {
+              "allOf": [
+                {
+                  "$ref": "#/$defs/task"
+                },
+                {
+                  "properties": {
+                    "seq": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 7
+                    }
+                  }
+                }
+              ]
+            },
+            "allOf": [
+              {
+                "contains": {
+                  "properties": {
+                    "taskId": {
+                      "const": "place_task"
+                    }
+                  },
+                  "required": ["taskId"]
+                },
+                "minContains": 1,
+                "maxContains": 1
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "taskId": {
+                      "const": "search_timer_catch"
+                    }
+                  },
+                  "required": ["taskId"]
+                },
+                "minContains": 1,
+                "maxContains": 1
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "taskId": {
+                      "const": "upgrade_subprocess"
+                    }
+                  },
+                  "required": ["taskId"]
+                },
+                "minContains": 1,
+                "maxContains": 1
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "taskId": {
+                      "const": "cancel_data_store_upgrade"
+                    }
+                  },
+                  "required": ["taskId"]
+                },
+                "minContains": 1,
+                "maxContains": 1
+              },
+              {
+                "contains": {
+                  "properties": {
+                    "taskId": {
+                      "const": "keyboard_quick_add"
+                    }
+                  },
+                  "required": ["taskId"]
+                },
+                "minContains": 1,
+                "maxContains": 1
+              }
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "taskId",
+        "outcome",
+        "durationSeconds",
+        "commandActions",
+        "typedCharacters",
+        "scrollGestures",
+        "redundantActivations",
+        "errors",
+        "seq"
+      ],
+      "properties": {
+        "taskId": {
+          "enum": [
+            "place_task",
+            "search_timer_catch",
+            "upgrade_subprocess",
+            "cancel_data_store_upgrade",
+            "keyboard_quick_add"
+          ]
+        },
+        "outcome": {
+          "enum": [
+            "success_unassisted",
+            "success_assisted",
+            "not_completed"
+          ]
+        },
+        "durationSeconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "commandActions": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "typedCharacters": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "scrollGestures": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "redundantActivations": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["code", "recovered"],
+            "properties": {
+              "code": {
+                "enum": [
+                  "wrong_control",
+                  "wrong_tool",
+                  "unexpected_profile_card",
+                  "duplicate_confirmation",
+                  "placement_miss",
+                  "keyboard_focus_loss",
+                  "unexpected_scroll",
+                  "other_observed"
+                ]
+              },
+              "recovered": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "seq": {
+          "type": ["number", "null"],
+          "minimum": 1,
+          "maximum": 7
+        }
+      }
+    }
+  }
+}

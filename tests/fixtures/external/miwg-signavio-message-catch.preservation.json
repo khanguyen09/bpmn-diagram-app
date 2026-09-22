@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "artifactRole": "vendor-extension-preservation-observation",
+  "fixture": "miwg-signavio-message-catch.bpmn",
+  "sourceClaimId": "miwg-signavio-message-catch-19-9-0",
+  "sourceSha256": "1efecf52906a7d3598ee49e0929133ed46bd76bbd83ec71290948c1ada44e02b",
+  "parser": "libxml2-wasm@0.7.1",
+  "transform": "bpmn-moddle@10.1.0:raw-parse-serialize",
+  "namespaces": [
+    "http://www.signavio.com"
+  ],
+  "expectedProjectionSha256": "dba62fa391a0148040214dd5410703f36874dd3bdeadde1e6cab46cc165ff910",
+  "throughTeb": "not-applicable",
+  "claimBoundary": "Exact namespace-aware Signavio extension projection across the named raw transform only; no vendor-schema, TEB canonical or universal-interoperability claim."
+}

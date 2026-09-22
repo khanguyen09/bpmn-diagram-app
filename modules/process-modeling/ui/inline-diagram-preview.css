@@ -1,0 +1,3 @@
+.inline-diagram-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.inline-diagram-preview { width: 100%; }
+.inline-diagram-preview > figcaption strong { overflow-wrap: anywhere; }

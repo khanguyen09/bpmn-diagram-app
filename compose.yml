@@ -1,0 +1,19 @@
+name: bpmn-diagram-app
+services:
+  postgres:
+    image: postgres:17-bookworm@sha256:4f736ae292687621d4dbe0d499ffd024a36bd2ee7d8ca6f2ccd4c800f047b394
+    environment:
+      POSTGRES_DB: bpmn_studio
+      POSTGRES_USER: bpmn
+      POSTGRES_PASSWORD: bpmn
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U bpmn -d bpmn_studio"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+    ports:
+      - "127.0.0.1:54339:5432"
+    volumes:
+      - bpmn-postgres:/var/lib/postgresql/data
+volumes:
+  bpmn-postgres:

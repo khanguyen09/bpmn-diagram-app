@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "fixture": "bpmn-js-data-store.bpmn",
+  "artifactRole": "immutable-upstream-fixture",
+  "source": {
+    "organization": "bpmn-io",
+    "repository": "https://github.com/bpmn-io/bpmn-js",
+    "commit": "319cb1ea74364c957a6c53e2ff70c27f8cc86462",
+    "officialSource": "https://github.com/bpmn-io/bpmn-js/blob/319cb1ea74364c957a6c53e2ff70c27f8cc86462/test/spec/features/modeling/behavior/DataStoreBehavior.connect.bpmn",
+    "rawSource": "https://raw.githubusercontent.com/bpmn-io/bpmn-js/319cb1ea74364c957a6c53e2ff70c27f8cc86462/test/spec/features/modeling/behavior/DataStoreBehavior.connect.bpmn",
+    "retrievedAt": "2026-08-01T03:52:23Z"
+  },
+  "producerEvidence": {
+    "tool": "Camunda Modeler",
+    "version": "2.6.0",
+    "releaseEvidence": null,
+    "evidence": "xml-metadata",
+    "unknownFields": ["exportDate", "exportPlatform", "authoringSteps"],
+    "note": "Tool and version are declared by the XML stored in the pinned bpmn-js repository."
+  },
+  "license": { "spdx": "LicenseRef-bpmn-io", "source": "https://github.com/bpmn-io/bpmn-js/blob/319cb1ea74364c957a6c53e2ff70c27f8cc86462/LICENSE" },
+  "integrity": { "algorithm": "sha256", "value": "22d44a98a7484e4904160c9590d82484b31b8a72b25c4ea15e73fa44d46badb5" },
+  "namespaces": ["http://www.omg.org/spec/BPMN/20100524/DI", "http://www.omg.org/spec/BPMN/20100524/MODEL", "http://www.omg.org/spec/DD/20100524/DC", "http://www.omg.org/spec/DD/20100524/DI", "http://www.w3.org/2001/XMLSchema-instance"],
+  "independenceBasis": "Byte-original official bpmn-js fixture outside TEB; no multi-vendor claim.",
+  "claimBoundary": {
+    "id": "bpmn-js-data-store-v18-22-1",
+    "feature": "data-store",
+    "minimumTebProfile": "teb-collaboration-data-authoring@1",
+    "semanticAssertions": [
+      { "id": "DataStore_1", "type": "bpmn:DataStore", "parentId": "Definitions_1" },
+      { "id": "DataStoreReference", "type": "bpmn:DataStoreReference", "parentId": "Process" }
+    ],
+    "propertyAssertions": [{ "elementId": "DataStoreReference", "property": "name", "value": "Data Store" }],
+    "referenceAssertions": [{ "elementId": "DataStoreReference", "property": "dataStoreRef", "targetIds": ["DataStore_1"] }],
+    "di": { "shapes": [{ "id": "_BPMNShape_DataStoreReference_3", "elementId": "DataStoreReference" }], "edges": [] },
+    "expectedTeb": {
+      "accepted": false,
+      "safeToPersist": false,
+      "readyToSeal": false,
+      "ruleIds": ["BPMN-SEC-002"]
+    },
+    "exclusions": ["full-bpmn-2.0-conformance", "workflow-engine-execution", "universal-interoperability", "vendor-extension-preservation"],
+    "statement": "Raw moddle round-trip preserves the DataStore backing reference and DI; TEB intentionally rejects the byte-original external schemaLocation."
+  }
+}

@@ -1,0 +1,136 @@
+name: ci
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  bpmn-independent-conformance:
+    name: BPMN conformance (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 10.12.4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.18.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec vitest run tests/contracts/bpmn-independent-conformance.contract.test.ts
+
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      DATABASE_URL: postgresql://experience:experience@localhost:5432/experience_blogs
+      TEST_DATABASE_URL: postgresql://experience:experience@localhost:5432/experience_blogs
+      BETTER_AUTH_SECRET: ci-only-secret-that-is-at-least-32-characters
+      BETTER_AUTH_URL: http://localhost:3000
+      BETTER_AUTH_TRUSTED_ORIGINS: http://localhost:3000
+    services:
+      postgres:
+        image: postgres:17-bookworm@sha256:4f736ae292687621d4dbe0d499ffd024a36bd2ee7d8ca6f2ccd4c800f047b394
+        env:
+          POSTGRES_DB: experience_blogs
+          POSTGRES_USER: experience
+          POSTGRES_PASSWORD: experience
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U experience -d experience_blogs"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: pnpm/action-setup@f40ffcd9367d9f12939873eb1018b921a783ffaa # v4
+        with:
+          version: 10.12.4
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: 24.18.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm audit --audit-level high
+      - run: pnpm db:validate
+      - run: pnpm db:generate
+      - run: pnpm db:migrate
+      - run: pnpm owner:provision
+        env:
+          OWNER_EMAIL: owner-ci@example.invalid
+          OWNER_PASSWORD: OwnerCiPassphrase2026!
+          OWNER_NAME: CI Owner
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - name: Run authentication integration against its guarded fresh database
+        run: |
+          psql "${DATABASE_URL%/*}/postgres" --set=ON_ERROR_STOP=1 --command='CREATE DATABASE experience_blogs_e2e_sdd84_auth'
+          auth_url="${DATABASE_URL%/*}/experience_blogs_e2e_sdd84_auth"
+          DATABASE_URL="$auth_url" pnpm db:migrate
+          DATABASE_URL="$auth_url" TEST_DATABASE_URL="$auth_url" pnpm exec vitest run modules/identity-access/owner-profile.integration.test.ts
+      - run: pnpm build
+      - run: pnpm test:e2e:install
+      - run: pnpm exec playwright install-deps chromium
+      - name: Create isolated E2E authority
+        shell: bash
+        run: |
+          e2e_url="${DATABASE_URL%/*}/experience_blogs_e2e_ci_run"
+          marker="$(openssl rand -hex 32)"
+          echo "::add-mask::$e2e_url"
+          echo "::add-mask::$marker"
+          {
+            echo "E2E_DATABASE_URL=$e2e_url"
+            echo "E2E_DATASTORE_MARKER=$marker"
+            echo "E2E_RUN_ID=ci_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}"
+          } >> "$GITHUB_ENV"
+          admin_url="${DATABASE_URL%/*}/postgres"
+          psql "$admin_url" --set=ON_ERROR_STOP=1 \
+            --command='CREATE DATABASE experience_blogs_e2e_ci_run'
+          DATABASE_URL="$e2e_url" pnpm db:migrate
+      - name: Provision and mark isolated E2E database
+        run: |
+          DATABASE_URL="$E2E_DATABASE_URL" pnpm owner:provision
+          pnpm test:e2e:prepare
+        env:
+          OWNER_EMAIL: owner-ci@example.invalid
+          OWNER_PASSWORD: OwnerCiPassphrase2026!
+          OWNER_NAME: CI Owner
+      - name: Verify isolated datastore cleanup authority
+        run: |
+          pnpm exec vitest run tests/support/e2e-datastore-harness.integration.test.ts
+          pnpm test:e2e:prepare
+      - run: pnpm test:e2e
+        name: Browser regression suite
+        env:
+          OWNER_EMAIL: owner-ci@example.invalid
+          OWNER_PASSWORD: OwnerCiPassphrase2026!
+      - run: docker build --tag bpmn-diagram-app:test .
+      - run: test "$(docker image inspect bpmn-diagram-app:test --format '{{.Config.User}}')" = "nextjs"
+      - name: Retain failed browser diagnostics (no auth state or network traces)
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: playwright-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            playwright-report/
+            test-results/
+            !**/playwright/.auth/**
+            !**/owner.json
+            !**/*.zip
+            !**/*.json
+            !**/*.env
+          include-hidden-files: false
+          if-no-files-found: ignore
+          retention-days: 3
