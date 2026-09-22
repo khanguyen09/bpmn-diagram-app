@@ -24,3 +24,7 @@ Local database evidence uses PostgreSQL 14; the recommended and CI database is P
 The aggregate skips the two dedicated auth cases and one datastore-harness integration when their explicit authority is absent. Authentication is run separately as noted above; the datastore harness is run in CI with an empty, explicitly marked database.
 
 The existing evidence manifest deliberately keeps real assistive-technology sessions, actual browser zoom and representative human-author sessions as NOT_RUN. This release is a modeling application with bounded profile support, not workflow execution or universal OMG certification.
+
+## Windows checkout correction
+
+The first GitHub run detected altered fixture checksums on Windows because the extraction omitted the original `.gitattributes` rule. The follow-up restores `tests/fixtures/external/*.bpmn text eol=lf`, preserving original bytes under `core.autocrlf=true`. No provenance checksum or assertion is changed. A fresh checkout simulation and the three-platform CI matrix validate the packaging correction.

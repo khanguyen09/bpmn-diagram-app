@@ -1,0 +1,3 @@
+# Provenance hashes cover original LF bytes, including on Windows autocrlf checkouts.
+# Do not normalize bytes in hash verification or replace pinned provenance hashes.
+tests/fixtures/external/*.bpmn text eol=lf
